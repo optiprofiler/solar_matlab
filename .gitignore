@@ -1,0 +1,4 @@
+runtime/solar/bin/solar
+runtime/solar/src/*.o
+*.asv
+.DS_Store

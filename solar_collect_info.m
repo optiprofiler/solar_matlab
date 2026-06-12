@@ -1,5 +1,5 @@
 function probinfo = solar_collect_info()
-%SOLAR_COLLECT_INFO returns SOLAR metadata rows used by solar_select.
+%SOLAR_COLLECT_INFO compatibility alias for solar_matlab_collect_info.
 
-    load(fullfile(fileparts(mfilename('fullpath')), 'probinfo_matlab.mat'), 'probinfo');
+    probinfo = solar_matlab_collect_info();
 end

@@ -4,12 +4,13 @@ restoredefaultpath;
 addpath(repo_dir);
 addpath(fullfile(op_root, 'optiprofiler', 'matlab', 'optiprofiler', 'src'));
 
-names = solar_select(struct('ptype', 'n', 'maxdim', 10));
+names = solar_matlab_select(struct('ptype', 'n', 'maxdim', 10));
 assert(ismember('SOLAR1_MAXNRG_H1', names));
 assert(ismember('SOLAR6_MINCOST_TS', names));
 assert(~ismember('SOLAR11_MINCOST_CH', names));
+assert(isequal(names, solar_select(struct('ptype', 'n', 'maxdim', 10))));
 
-p = solar_load('SOLAR1_MAXNRG_H1');
+p = solar_matlab_load('SOLAR1_MAXNRG_H1');
 assert(strcmp(p.name, 'SOLAR1_MAXNRG_H1'));
 assert(p.n == 9);
 assert(p.m_nonlinear_ub == 5);
@@ -17,5 +18,6 @@ fx = p.fun(p.x0);
 assert(abs(fx - (-122505.5978)) < 1e-8);
 cubx = p.cub(p.x0);
 assert(numel(cubx) == 5);
+assert(solar_load('SOLAR10_MINCOST_UNCONSTRAINED').n == 5);
 
 disp('solar_matlab smoke ok');

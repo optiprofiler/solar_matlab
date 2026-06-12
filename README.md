@@ -21,10 +21,15 @@ The binary is generated at `runtime/solar/bin/solar` and is ignored by git.
 ## Usage
 
 ```matlab
-names = solar_select(struct('ptype', 'n', 'maxdim', 20));
-problem = solar_load(names{1});
+names = solar_matlab_select(struct('ptype', 'n', 'maxdim', 20));
+problem = solar_matlab_load(names{1});
 problem.fun(problem.x0)
 ```
+
+For convenience, `solar_load`, `solar_select`, and `solar_collect_info` are also
+available as aliases. The canonical OptiProfiler entry points are
+`solar_matlab_load.m` and `solar_matlab_select.m`, so the repository can be used
+as `plib="solar_matlab"` without relying on shorter alias names.
 
 SOLAR 8 and 9 are multiobjective and are not returned by the first scalar
 OptiProfiler selector. SOLAR 11 is disabled for now because upstream SOLAR
