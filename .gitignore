@@ -1,4 +1,5 @@
 runtime/solar/bin/solar
 runtime/solar/src/*.o
+runtime/solar/.build.lock.d/
 *.asv
 .DS_Store

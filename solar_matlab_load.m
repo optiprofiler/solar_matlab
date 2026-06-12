@@ -97,10 +97,44 @@ function executable = ensure_solar_executable()
     if exist(executable, 'file') == 2
         return;
     end
-    source_dir = fullfile(root, 'runtime', 'solar', 'src');
+
+    runtime_dir = fullfile(root, 'runtime', 'solar');
+    lock_dir = fullfile(runtime_dir, '.build.lock.d');
+    cleanup_lock = acquire_build_lock(lock_dir); %#ok<NASGU>
+    if exist(executable, 'file') == 2
+        return;
+    end
+
+    bin_dir = fileparts(executable);
+    if exist(bin_dir, 'dir') ~= 7
+        mkdir(bin_dir);
+    end
+    source_dir = fullfile(runtime_dir, 'src');
     [status, output] = system(sprintf('make -C "%s"', source_dir));
     if status ~= 0 || exist(executable, 'file') ~= 2
         error('SOLAR:BuildFailed', 'Failed to build SOLAR executable: %s', output);
+    end
+end
+
+function cleanup_lock = acquire_build_lock(lock_dir)
+    timeout_sec = 600;
+    started = tic;
+    while true
+        [status, message] = system(sprintf('mkdir "%s"', lock_dir));
+        if status == 0
+            cleanup_lock = onCleanup(@() release_build_lock(lock_dir));
+            return;
+        end
+        if toc(started) > timeout_sec
+            error('SOLAR:BuildLockTimeout', 'Timed out waiting for SOLAR build lock: %s', strtrim(message));
+        end
+        pause(0.1);
+    end
+end
+
+function release_build_lock(lock_dir)
+    if exist(lock_dir, 'dir') == 7
+        rmdir(lock_dir);
     end
 end
 
