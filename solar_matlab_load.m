@@ -57,13 +57,13 @@ function [objectives, constraints] = solar_eval(state, x)
     write_point(input_file, x);
     command = sprintf('"%s" %d "%s" -seed=0 -fid=1.0 -rep=1', state.executable, state.meta.pb_id, input_file);
     [status, stdout] = system(command);
-    if status ~= 0
-        error('SOLAR:ExecutionFailed', 'SOLAR failed with status %d: %s', status, stdout);
-    end
 
     values = parse_solar_stdout(stdout);
     expected = state.meta.m_objectives + state.meta.m_constraints;
     if numel(values) ~= expected
+        if status ~= 0
+            error('SOLAR:ExecutionFailed', 'SOLAR failed with status %d and returned %d numeric values, expected %d: %s', status, numel(values), expected, stdout);
+        end
         error('SOLAR:UnexpectedOutputShape', 'SOLAR returned %d numeric values, expected %d.', numel(values), expected);
     end
 

@@ -57,3 +57,9 @@ SOLAR returns objective and constraint values from one executable call. The
 MATLAB wrapper keeps that joint-oracle detail inside `solar_load`; it does not
 call OptiProfiler-visible `cub` from `fun`, or `fun` from `cub`. This preserves
 OptiProfiler's separate objective and constraint evaluation histories.
+
+SOLAR may return a nonzero process status for a simulation point while still
+printing a complete numeric output vector, usually with `1e20` penalty values.
+The wrapper treats a complete numeric vector as the SOLAR evaluation result and
+raises an execution error only when the process fails without a complete output
+vector.
