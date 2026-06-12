@@ -1,0 +1,133 @@
+function problem = solar_load(problem_name)
+%SOLAR_LOAD loads one SOLAR problem as an OptiProfiler Problem.
+
+    meta = find_solar_problem(problem_name);
+    if ~meta.enabled
+        error('SOLAR:DisabledProblem', 'SOLAR problem is disabled: %s', problem_name);
+    end
+
+    state = solar_state(meta);
+    p_struct.name = meta.name;
+    p_struct.x0 = meta.x0;
+    p_struct.xl = meta.xl;
+    p_struct.xu = meta.xu;
+    p_struct.fun = @(x) solar_fun(state, x);
+    if meta.m_constraints > 0
+        p_struct.cub = @(x) solar_cub(state, x);
+    end
+    problem = Problem(p_struct);
+end
+
+function meta = find_solar_problem(problem_name)
+    problems = solar_metadata();
+    problem_name = char(problem_name);
+    for i_problem = 1:numel(problems)
+        if strcmp(problems(i_problem).name, problem_name)
+            meta = problems(i_problem);
+            return;
+        end
+    end
+    error('SOLAR:UnknownProblem', 'Unknown SOLAR problem: %s', problem_name);
+end
+
+function state = solar_state(meta)
+    state.meta = meta;
+    state.executable = ensure_solar_executable();
+end
+
+function fx = solar_fun(state, x)
+    [objectives, ~] = solar_eval(state, x);
+    fx = objectives(1);
+end
+
+function cubx = solar_cub(state, x)
+    x = x(:);
+    if is_problem_size_probe()
+        cubx = NaN(state.meta.m_constraints, 1);
+        return;
+    end
+    [~, constraints] = solar_eval(state, x);
+    cubx = constraints(:);
+end
+
+function [objectives, constraints] = solar_eval(state, x)
+    x = x(:);
+    input_file = [tempname, '.txt'];
+    cleanup = onCleanup(@() delete_if_exists(input_file));
+    write_point(input_file, x);
+    command = sprintf('"%s" %d "%s" -seed=0 -fid=1.0 -rep=1', state.executable, state.meta.pb_id, input_file);
+    [status, stdout] = system(command);
+    if status ~= 0
+        error('SOLAR:ExecutionFailed', 'SOLAR failed with status %d: %s', status, stdout);
+    end
+
+    values = parse_solar_stdout(stdout);
+    expected = state.meta.m_objectives + state.meta.m_constraints;
+    if numel(values) ~= expected
+        error('SOLAR:UnexpectedOutputShape', 'SOLAR returned %d numeric values, expected %d.', numel(values), expected);
+    end
+
+    objectives = values(1:state.meta.m_objectives);
+    constraints = values(state.meta.m_objectives + 1:end);
+end
+
+function executable = ensure_solar_executable()
+    root = fileparts(mfilename('fullpath'));
+    executable = fullfile(root, 'runtime', 'solar', 'bin', 'solar');
+    if exist(executable, 'file') == 2
+        return;
+    end
+    source_dir = fullfile(root, 'runtime', 'solar', 'src');
+    [status, output] = system(sprintf('make -C "%s"', source_dir));
+    if status ~= 0 || exist(executable, 'file') ~= 2
+        error('SOLAR:BuildFailed', 'Failed to build SOLAR executable: %s', output);
+    end
+end
+
+function write_point(path, x)
+    fid = fopen(path, 'w');
+    if fid < 0
+        error('SOLAR:InputFileOpenFailed', 'Could not open temporary SOLAR input file.');
+    end
+    cleanup = onCleanup(@() fclose(fid));
+    fprintf(fid, '%.17g', x(1));
+    for i = 2:numel(x)
+        fprintf(fid, ' %.17g', x(i));
+    end
+    fprintf(fid, '\n');
+end
+
+function values = parse_solar_stdout(stdout)
+    lines = regexp(stdout, '\r?\n', 'split');
+    values = [];
+    for i = numel(lines):-1:1
+        line = strtrim(lines{i});
+        if isempty(line)
+            continue;
+        end
+        pieces = regexp(line, '\s+', 'split');
+        candidate = str2double(pieces);
+        if all(~isnan(candidate))
+            values = candidate(:);
+            return;
+        end
+    end
+    error('SOLAR:ParseFailed', 'SOLAR output could not be parsed: %s', stdout);
+end
+
+function delete_if_exists(path)
+    if exist(path, 'file') == 2
+        delete(path);
+    end
+end
+
+function tf = is_problem_size_probe()
+    stack = dbstack();
+    tf = false;
+    for i = 1:numel(stack)
+        if strcmp(stack(i).name, 'Problem.get.m_nonlinear_ub')
+            tf = true;
+            return;
+        end
+    end
+end
