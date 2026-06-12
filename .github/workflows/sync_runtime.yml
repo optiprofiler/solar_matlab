@@ -1,0 +1,83 @@
+name: Sync SOLAR Runtime
+
+on:
+  workflow_dispatch:
+    inputs:
+      adapter_ref:
+        description: "solar_adapter branch, tag, or commit"
+        required: false
+        default: "main"
+  repository_dispatch:
+    types: [solar-runtime-updated]
+
+permissions:
+  contents: write
+
+jobs:
+  sync-runtime:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Checkout solar_adapter
+        uses: actions/checkout@v4
+        with:
+          repository: optiprofiler/solar_adapter
+          path: solar_adapter
+          ref: ${{ github.event.client_payload.adapter_ref || github.event.inputs.adapter_ref || 'main' }}
+
+      - name: Checkout OptiProfiler
+        uses: actions/checkout@v4
+        with:
+          repository: optiprofiler/optiprofiler
+          path: optiprofiler
+          ref: main
+
+      - name: Configure Git identity
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+
+      - name: Set up MATLAB
+        uses: matlab-actions/setup-matlab@v2
+        with:
+          release: R2024a
+
+      - name: Generate slim runtime from adapter
+        run: |
+          bash solar_adapter/scripts/sync_solar.sh
+          bash solar_adapter/scripts/export_runtime.sh solar_adapter/build/solar-runtime
+
+      - name: Copy runtime into MATLAB wrapper
+        run: |
+          rsync -a --delete \
+            --exclude='bin/solar' \
+            --exclude='src/*.o' \
+            solar_adapter/build/solar-runtime/ runtime/solar/
+          rm -f runtime/solar/bin/solar runtime/solar/src/*.o
+          rm -rf runtime/solar/.build.lock.d
+
+      - name: Regenerate MATLAB probinfo
+        uses: matlab-actions/run-command@v2
+        with:
+          command: "run('scripts/collect_info.m')"
+
+      - name: Run MATLAB smoke test
+        uses: matlab-actions/run-command@v2
+        with:
+          command: "run('tests/smoke_solar_matlab.m')"
+
+      - name: Commit runtime update
+        run: |
+          rm -f runtime/solar/bin/solar runtime/solar/src/*.o
+          rm -rf runtime/solar/.build.lock.d
+          git add runtime/solar probinfo_matlab.csv probinfo_matlab.mat
+          if git diff --staged --quiet; then
+            echo "No runtime changes detected."
+          else
+            git commit -m "Sync SOLAR runtime from adapter"
+            git push
+          fi

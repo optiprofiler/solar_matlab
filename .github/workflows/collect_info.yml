@@ -1,0 +1,58 @@
+name: Collect Info
+
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows: ["CI"]
+    types:
+      - completed
+
+permissions:
+  contents: write
+
+concurrency:
+  group: collect-info
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure Git identity
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+
+      - name: Set up MATLAB
+        uses: matlab-actions/setup-matlab@v2
+        with:
+          release: R2024a
+
+      - name: Regenerate MATLAB probinfo
+        uses: matlab-actions/run-command@v2
+        with:
+          command: "run('scripts/collect_info.m')"
+
+      - name: Upload probinfo artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: solar-matlab-probinfo
+          path: |
+            probinfo_matlab.csv
+            probinfo_matlab.mat
+
+      - name: Commit probinfo update
+        run: |
+          git add probinfo_matlab.csv probinfo_matlab.mat
+          if git diff --staged --quiet; then
+            echo "No probinfo changes detected."
+          else
+            git commit -m "Auto-update SOLAR MATLAB probinfo"
+            git push
+          fi

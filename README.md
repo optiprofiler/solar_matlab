@@ -21,6 +21,19 @@ The MATLAB wrapper also builds this binary on first use if it is missing. First
 build is protected by a local directory lock, so parallel workers do not try to
 compile and link the same runtime at the same time.
 
+## Automation
+
+`scripts/collect_info.m` regenerates `probinfo_matlab.csv` and
+`probinfo_matlab.mat` from the vendored runtime metadata. The MAT-file header is
+normalized so repeated generation does not create timestamp-only diffs. The CI
+workflow checks both metadata files, runs a MATLAB smoke test, and verifies that
+local build artifacts stay ignored.
+
+The runtime-sync workflow listens for manual runs or `repository_dispatch`
+events from `solar_adapter`. It exports a slim SOLAR runtime from the adapter,
+copies it into this repository, regenerates MATLAB probinfo files, runs the
+smoke test, and commits only source, metadata, license, and provenance files.
+
 ## Usage
 
 ```matlab
@@ -43,9 +56,10 @@ v1.0.8 returns an empty output at the documented initial point.
 SOLAR problems call an external C++ solar-plant simulator. Some instances are
 substantially more expensive than ordinary algebraic test problems: a single
 objective or constraint evaluation can keep one CPU core busy for many seconds
-or longer. In local OptiProfiler tests, the slowest scalar instances have been
-`SOLAR3_MINCOST_C1`, `SOLAR4_MINCOST_C2`, and especially
-`SOLAR5_MAXCOMP_HTF1`.
+or longer. In local OptiProfiler tests, `SOLAR5_MAXCOMP_HTF1` has been the
+clearest slow case. `SOLAR3_MINCOST_C1` and `SOLAR4_MINCOST_C2` can also be
+noticeably slower than the small storage/receiver instances, depending on the
+trial point and solver behavior.
 
 Solver choice can multiply this cost. MATLAB `fmincon` with finite
 differences, or any solver that estimates derivatives internally, may call the
