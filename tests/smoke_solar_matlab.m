@@ -18,6 +18,10 @@ fx = p.fun(p.x0);
 assert(abs(fx - (-122505.5978)) < 1e-8);
 cubx = p.cub(p.x0);
 assert(numel(cubx) == 5);
+x = p.x0;
+x(6) = 250.5;
+assert(isfinite(p.fun(x)));
+assert(~any(isnan(p.cub(x))));
 assert(solar_load('SOLAR10_MINCOST_UNCONSTRAINED').n == 5);
 
 disp('solar_matlab smoke ok');

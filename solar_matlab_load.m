@@ -51,7 +51,7 @@ function cubx = solar_cub(state, x)
 end
 
 function [objectives, constraints] = solar_eval(state, x)
-    x = x(:);
+    x = prepare_solar_input(state.meta, x);
     input_file = [tempname, '.txt'];
     cleanup = onCleanup(@() delete_if_exists(input_file));
     write_point(input_file, x);
@@ -69,6 +69,26 @@ function [objectives, constraints] = solar_eval(state, x)
 
     objectives = values(1:state.meta.m_objectives);
     constraints = values(state.meta.m_objectives + 1:end);
+end
+
+function x = prepare_solar_input(meta, x)
+    x = double(x(:));
+    if numel(x) ~= meta.n
+        error('SOLAR:WrongInputDimension', 'SOLAR input has dimension %d, expected %d.', numel(x), meta.n);
+    end
+    for i = 1:numel(x)
+        if ~strcmp(meta.input_type{i}, 'I') || ~isfinite(x(i))
+            continue;
+        end
+        value = floor(x(i) + 0.5);
+        if isfinite(meta.xl(i))
+            value = max(value, ceil(meta.xl(i)));
+        end
+        if isfinite(meta.xu(i))
+            value = min(value, floor(meta.xu(i)));
+        end
+        x(i) = value;
+    end
 end
 
 function executable = ensure_solar_executable()
