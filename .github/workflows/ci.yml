@@ -35,6 +35,12 @@ jobs:
         run: |
           git diff --exit-code probinfo_matlab.csv probinfo_matlab.mat
 
+      - name: Build SOLAR runtime
+        run: |
+          mkdir -p runtime/solar/bin
+          make -C runtime/solar/src
+          test -x runtime/solar/bin/solar
+
       - name: Run MATLAB smoke test
         uses: matlab-actions/run-command@v2
         with:
