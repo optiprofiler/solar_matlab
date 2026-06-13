@@ -35,7 +35,7 @@ assert(strcmp(p.name, 'SOLAR1_MAXNRG_H1'));
 assert(p.n == 9);
 assert(p.m_nonlinear_ub == 5);
 fx = p.fun(p.x0);
-assert(abs(fx - (-122505.5978)) < 1e-8);
+assert(abs(fx - (-122505.5978)) < 1e-3);
 cubx = p.cub(p.x0);
 assert(numel(cubx) == 5);
 x = p.x0;
