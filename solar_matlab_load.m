@@ -56,7 +56,7 @@ function [objectives, constraints] = solar_eval(state, x)
     cleanup = onCleanup(@() delete_if_exists(input_file));
     write_point(input_file, x);
     command = sprintf('"%s" %d "%s" -seed=0 -fid=1.0 -rep=1', state.executable, state.meta.pb_id, input_file);
-    [status, stdout] = system(command);
+    [status, stdout] = solar_system(command);
 
     values = parse_solar_stdout(stdout);
     expected = state.meta.m_objectives + state.meta.m_constraints;
@@ -110,10 +110,17 @@ function executable = ensure_solar_executable()
         mkdir(bin_dir);
     end
     source_dir = fullfile(runtime_dir, 'src');
-    [status, output] = system(sprintf('make -C "%s"', source_dir));
+    [status, output] = solar_system(sprintf('make -C "%s"', source_dir));
     if status ~= 0 || exist(executable, 'file') ~= 2
         error('SOLAR:BuildFailed', 'Failed to build SOLAR executable: %s', output);
     end
+end
+
+function [status, output] = solar_system(command)
+    if isunix
+        command = ['env -u LD_LIBRARY_PATH -u DYLD_LIBRARY_PATH -u DYLD_FRAMEWORK_PATH ', command];
+    end
+    [status, output] = system(command);
 end
 
 function cleanup_lock = acquire_build_lock(lock_dir)
