@@ -1,8 +1,22 @@
 repo_dir = fileparts(fileparts(mfilename('fullpath')));
+restoredefaultpath;
 addpath(repo_dir);
 
-problems = solar_metadata();
-n_problems = numel(problems);
+local_op_src = fullfile(fileparts(fileparts(repo_dir)), ...
+    'optiprofiler', 'matlab', 'optiprofiler', 'src');
+ci_op_src = fullfile(repo_dir, 'optiprofiler', ...
+    'matlab', 'optiprofiler', 'src');
+if exist(ci_op_src, 'dir') == 7
+    addpath(ci_op_src);
+elseif exist(local_op_src, 'dir') == 7
+    addpath(local_op_src);
+elseif exist('Problem', 'class') ~= 8
+    error('SOLAR:CollectInfo', 'Could not find OptiProfiler MATLAB Problem class.');
+end
+
+metadata = solar_metadata();
+metadata = metadata([metadata.enabled]);
+n_problems = numel(metadata);
 names = cell(n_problems, 1);
 ptype = cell(n_problems, 1);
 dim = zeros(n_problems, 1);
@@ -12,20 +26,14 @@ mnlcon = zeros(n_problems, 1);
 mcon = zeros(n_problems, 1);
 
 for i_problem = 1:n_problems
-    problem = problems(i_problem);
+    problem = solar_matlab_load(metadata(i_problem).name);
     names{i_problem} = problem.name;
+    ptype{i_problem} = problem.ptype;
     dim(i_problem) = problem.n;
-    mb(i_problem) = sum(isfinite(problem.xl)) + sum(isfinite(problem.xu));
-    mlcon(i_problem) = 0;
-    mnlcon(i_problem) = problem.m_constraints;
-    mcon(i_problem) = problem.m_constraints;
-    if problem.m_constraints > 0
-        ptype{i_problem} = 'n';
-    elseif mb(i_problem) > 0
-        ptype{i_problem} = 'b';
-    else
-        ptype{i_problem} = 'u';
-    end
+    mb(i_problem) = problem.mb;
+    mlcon(i_problem) = problem.mlcon;
+    mnlcon(i_problem) = problem.mnlcon;
+    mcon(i_problem) = problem.mcon;
 end
 
 rows = table(names, ptype, dim, mb, mlcon, mnlcon, mcon, ...

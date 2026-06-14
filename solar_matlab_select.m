@@ -42,13 +42,21 @@ function problem_names = solar_matlab_select(options)
     end
 
     problems = solar_metadata();
+    enabled_names = {problems([problems.enabled]).name};
+    rows = readtable(fullfile(fileparts(mfilename('fullpath')), 'probinfo_matlab.csv'), ...
+        'TextType', 'char');
     problem_names = {};
-    for i_problem = 1:numel(problems)
-        problem = problems(i_problem);
-        if ~problem.enabled
+    for i_problem = 1:height(rows)
+        row.name = table_value(rows.name, i_problem);
+        row.ptype = table_value(rows.ptype, i_problem);
+        row.dim = rows.dim(i_problem);
+        row.mb = rows.mb(i_problem);
+        row.mlcon = rows.mlcon(i_problem);
+        row.mnlcon = rows.mnlcon(i_problem);
+        row.mcon = rows.mcon(i_problem);
+        if ~ismember(row.name, enabled_names)
             continue;
         end
-        row = solar_row(problem);
         if ismember(row.name, options.excludelist)
             continue;
         end
@@ -74,18 +82,12 @@ function problem_names = solar_matlab_select(options)
     end
 end
 
-function row = solar_row(problem)
-    row.name = problem.name;
-    row.dim = problem.n;
-    row.mb = sum(isfinite(problem.xl)) + sum(isfinite(problem.xu));
-    row.mlcon = 0;
-    row.mnlcon = problem.m_constraints;
-    row.mcon = problem.m_constraints;
-    if problem.m_constraints > 0
-        row.ptype = 'n';
-    elseif row.mb > 0
-        row.ptype = 'b';
+function value = table_value(column, index)
+    if iscell(column)
+        value = column{index};
+    elseif isstring(column)
+        value = char(column(index));
     else
-        row.ptype = 'u';
+        value = char(column(index, :));
     end
 end

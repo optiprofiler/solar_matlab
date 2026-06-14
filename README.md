@@ -24,10 +24,13 @@ compile and link the same runtime at the same time.
 ## Automation
 
 `scripts/collect_info.m` regenerates `probinfo_matlab.csv` and
-`probinfo_matlab.mat` from the vendored runtime metadata. The MAT-file header is
-normalized so repeated generation does not create timestamp-only diffs. The CI
-workflow checks both metadata files, runs a MATLAB smoke test, and verifies that
-local build artifacts stay ignored.
+`probinfo_matlab.mat` by loading each enabled SOLAR problem through
+`solar_matlab_load` and reading the resulting OptiProfiler `Problem` fields.
+The vendored metadata is still needed to construct each problem, but the
+selection index is derived from the wrapper contract that users actually call.
+The MAT-file header is normalized so repeated generation does not create
+timestamp-only diffs. The CI workflow checks both metadata files, runs a MATLAB
+smoke test, and verifies that local build artifacts stay ignored.
 
 The runtime-sync workflow listens for manual runs or `repository_dispatch`
 events from `solar_adapter`. It exports a slim SOLAR runtime from the adapter,
@@ -50,6 +53,15 @@ as `plib="solar_matlab"` without relying on shorter alias names.
 SOLAR 8 and 9 are multiobjective and are not returned by the first scalar
 OptiProfiler selector. SOLAR 11 is disabled for now because upstream SOLAR
 v1.0.8 returns an empty output at the documented initial point.
+
+## License and Provenance
+
+The runtime manifest records the exact upstream SOLAR commit. The upstream
+repository provides an LGPL-2.1 license file, while current SOLAR source headers
+refer to LGPL version 3 or later. This wrapper preserves both the license file
+and the source notices from the upstream snapshot; downstream distributions
+should keep the manifest, license text, source notices, and upstream URL
+together.
 
 ## Runtime Expectations
 
@@ -84,9 +96,9 @@ SOLAR 10, or report the rounding policy explicitly.
 ## Evaluation Accounting
 
 SOLAR returns objective and constraint values from one executable call. The
-MATLAB wrapper keeps that joint-oracle detail inside `solar_load`; it does not
-call OptiProfiler-visible `cub` from `fun`, or `fun` from `cub`. This preserves
-OptiProfiler's separate objective and constraint evaluation histories.
+MATLAB wrapper may cache that raw executable result inside `solar_load`; it does
+not call OptiProfiler-visible `cub` from `fun`, or `fun` from `cub`. This
+preserves OptiProfiler's separate objective and constraint evaluation histories.
 
 SOLAR may return a nonzero process status for a simulation point while still
 printing a complete numeric output vector, usually with `1e20` penalty values.

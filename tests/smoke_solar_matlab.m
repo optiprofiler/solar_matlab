@@ -30,6 +30,20 @@ assert(isequal(all_names, expected_enabled));
 assert(~ismember('SOLAR8_MAXHF_MINCOST', all_names));
 assert(~ismember('SOLAR9_MAXNRG_MINPAR', all_names));
 
+probinfo = solar_collect_info();
+probinfo_names = cellstr(squeeze(probinfo(2:end, 1, :)));
+assert(isequal(probinfo_names(:)', expected_enabled));
+assert(~ismember('SOLAR11_MINCOST_CH', probinfo_names));
+for i = 1:numel(probinfo_names)
+    p_row = solar_matlab_load(probinfo_names{i});
+    assert(strcmp(probinfo_value(probinfo, i + 1, 2), p_row.ptype));
+    assert(str2double(probinfo_value(probinfo, i + 1, 3)) == p_row.n);
+    assert(str2double(probinfo_value(probinfo, i + 1, 4)) == p_row.mb);
+    assert(str2double(probinfo_value(probinfo, i + 1, 5)) == p_row.mlcon);
+    assert(str2double(probinfo_value(probinfo, i + 1, 6)) == p_row.mnlcon);
+    assert(str2double(probinfo_value(probinfo, i + 1, 7)) == p_row.mcon);
+end
+
 p = solar_matlab_load('SOLAR1_MAXNRG_H1');
 assert(strcmp(p.name, 'SOLAR1_MAXNRG_H1'));
 assert(p.n == 9);
@@ -45,3 +59,7 @@ assert(~any(isnan(p.cub(x))));
 assert(solar_load('SOLAR10_MINCOST_UNCONSTRAINED').n == 5);
 
 disp('solar_matlab smoke ok');
+
+function value = probinfo_value(probinfo, row, col)
+    value = strtrim(squeeze(probinfo(row, col, :))');
+end

@@ -52,6 +52,14 @@ end
 
 function [objectives, constraints] = solar_eval(state, x)
     x = prepare_solar_input(state.meta, x);
+    cache_key = solar_cache_key(state, x);
+    persistent last_key last_objectives last_constraints
+    if ~isempty(last_key) && strcmp(last_key, cache_key)
+        objectives = last_objectives;
+        constraints = last_constraints;
+        return;
+    end
+
     input_file = [tempname, '.txt'];
     cleanup = onCleanup(@() delete_if_exists(input_file));
     write_point(input_file, x);
@@ -69,6 +77,21 @@ function [objectives, constraints] = solar_eval(state, x)
 
     objectives = values(1:state.meta.m_objectives);
     constraints = values(state.meta.m_objectives + 1:end);
+    last_key = cache_key;
+    last_objectives = objectives;
+    last_constraints = constraints;
+end
+
+function key = solar_cache_key(state, x)
+    key = sprintf('%s|%d|%s', state.executable, state.meta.pb_id, format_point_key(x));
+end
+
+function key = format_point_key(x)
+    pieces = cell(numel(x), 1);
+    for i = 1:numel(x)
+        pieces{i} = sprintf('%.17g', x(i));
+    end
+    key = strjoin(pieces, ',');
 end
 
 function x = prepare_solar_input(meta, x)

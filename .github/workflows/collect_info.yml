@@ -24,6 +24,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Checkout OptiProfiler
+        uses: actions/checkout@v4
+        with:
+          repository: optiprofiler/optiprofiler
+          path: optiprofiler
+          ref: main
+
       - name: Configure Git identity
         run: |
           git config --global user.name 'github-actions[bot]'
@@ -49,6 +56,7 @@ jobs:
 
       - name: Commit probinfo update
         run: |
+          rm -rf optiprofiler
           git add probinfo_matlab.csv probinfo_matlab.mat
           if git diff --staged --quiet; then
             echo "No probinfo changes detected."
