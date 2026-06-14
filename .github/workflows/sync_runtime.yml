@@ -55,9 +55,10 @@ jobs:
         run: |
           rsync -a --delete \
             --exclude='bin/solar' \
+            --exclude='bin/solar.exe' \
             --exclude='src/*.o' \
             solar_adapter/build/solar-runtime/ runtime/solar/
-          rm -f runtime/solar/bin/solar runtime/solar/src/*.o
+          rm -f runtime/solar/bin/solar runtime/solar/bin/solar.exe runtime/solar/src/*.o
           rm -rf runtime/solar/.build.lock.d
 
       - name: Regenerate MATLAB probinfo
@@ -72,7 +73,7 @@ jobs:
 
       - name: Commit runtime update
         run: |
-          rm -f runtime/solar/bin/solar runtime/solar/src/*.o
+          rm -f runtime/solar/bin/solar runtime/solar/bin/solar.exe runtime/solar/src/*.o
           rm -rf runtime/solar/.build.lock.d
           git add runtime/solar probinfo_matlab.csv probinfo_matlab.mat
           if git diff --staged --quiet; then

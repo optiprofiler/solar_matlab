@@ -116,7 +116,7 @@ end
 
 function executable = ensure_solar_executable()
     root = fileparts(mfilename('fullpath'));
-    executable = fullfile(root, 'runtime', 'solar', 'bin', 'solar');
+    executable = fullfile(root, 'runtime', 'solar', 'bin', solar_executable_name());
     if exist(executable, 'file') == 2
         return;
     end
@@ -133,9 +133,26 @@ function executable = ensure_solar_executable()
         mkdir(bin_dir);
     end
     source_dir = fullfile(runtime_dir, 'src');
-    [status, output] = solar_system(sprintf('make -C "%s"', source_dir));
+    make_command = sprintf('make -C "%s"%s', source_dir, solar_make_exeext_arg());
+    [status, output] = solar_system(make_command);
     if status ~= 0 || exist(executable, 'file') ~= 2
         error('SOLAR:BuildFailed', 'Failed to build SOLAR executable: %s', output);
+    end
+end
+
+function name = solar_executable_name()
+    if ispc
+        name = 'solar.exe';
+    else
+        name = 'solar';
+    end
+end
+
+function arg = solar_make_exeext_arg()
+    if ispc
+        arg = ' EXEEXT=.exe LIBS=-lm';
+    else
+        arg = '';
     end
 end
 
