@@ -52,9 +52,24 @@ problem = solar_load(names{1});
 problem.fun(problem.x0)
 ```
 
+## Public API
+
+The public problem-library name is `solar`. User-facing code should normally
+use the following entry points:
+
+- `solar_load(problem_name)` loads one enabled scalar SOLAR problem as an
+  OptiProfiler `Problem` instance.
+- `solar_select(options)` returns enabled scalar SOLAR problem names satisfying
+  OptiProfiler-style selection criteria.
+- `solar_collect_info()` returns the committed problem-information table used
+  by `solar_select`.
+
+This repository also keeps `solar_matlab_load`, `solar_matlab_select`, and
+`solar_matlab_collect_info` as MATLAB-specific implementation and compatibility
+entry points. They are not the preferred names for user code.
+
 In OptiProfiler, use this adapter as the problem library `solar`, for example
-`options.plibs = {'solar'}`. The repository still keeps `solar_matlab_*`
-compatibility entry points internally because the GitHub source repository is
+`options.plibs = {'solar'}`. The GitHub source repository name is
 language-specific, but the public problem-library name is `solar`.
 
 SOLAR 8 and 9 are multiobjective and are not returned by the first scalar

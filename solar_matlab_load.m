@@ -6,6 +6,11 @@ function problem = solar_matlab_load(problem_name)
 %   normally call `solar_load`, whose name matches the OptiProfiler problem
 %   library name `solar`.
 %
+%   The returned Problem contains the same fields exposed by SOLAR_LOAD:
+%   objective function, initial point, bounds, and nonlinear inequality
+%   constraints when the SOLAR instance has constraints. This wrapper does not
+%   expose derivative functions.
+%
 %   See also SOLAR_LOAD, SOLAR_SELECT, SOLAR_COLLECT_INFO.
 
     meta = find_solar_problem(problem_name);

@@ -10,6 +10,10 @@ function problem_names = solar_matlab_select(options)
 %   from actual `solar_load` results. The vendored metadata is used only to
 %   filter currently enabled problems.
 %
+%   OPTIONS accepts the same fields as SOLAR_SELECT: ptype, mindim, maxdim,
+%   minb, maxb, minlcon, maxlcon, minnlcon, maxnlcon, mincon, maxcon, and
+%   excludelist.
+%
 %   See also SOLAR_SELECT, SOLAR_LOAD, SOLAR_COLLECT_INFO.
 
     if nargin < 1 || isempty(options)

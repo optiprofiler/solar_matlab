@@ -2,8 +2,8 @@ function probinfo = solar_collect_info()
 %SOLAR_COLLECT_INFO returns the SOLAR problem information table.
 %
 %   PROBINFO = SOLAR_COLLECT_INFO() returns the problem information used by
-%   `solar_select`. The returned array has the same compact columns used by the
-%   custom OptiProfiler problem-library examples:
+%   SOLAR_SELECT. The returned array has the same compact columns used by
+%   OptiProfiler custom problem libraries:
 %
 %       name, ptype, dim, mb, mlcon, mnlcon, mcon
 %
@@ -12,6 +12,12 @@ function probinfo = solar_collect_info()
 %   `solar_load` and records the resulting Problem fields. The vendored metadata
 %   is still needed to construct each problem, but this selection table reflects
 %   the wrapper contract that users actually call.
+%
+%   Example:
+%
+%       probinfo = solar_collect_info();
+%
+%   See also SOLAR_SELECT, SOLAR_LOAD.
 
     probinfo = solar_matlab_collect_info();
 end

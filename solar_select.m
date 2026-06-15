@@ -1,11 +1,10 @@
 function problem_names = solar_select(options)
-%SOLAR_SELECT selects SOLAR problems satisfying OptiProfiler-style criteria.
+%SOLAR_SELECT selects SOLAR problems that satisfy given criteria.
 %
 %   PROBLEM_NAMES = SOLAR_SELECT(OPTIONS) returns the names of enabled scalar
 %   SOLAR problems that satisfy the criteria in OPTIONS as a cell array
-%   PROBLEM_NAMES. SOLAR is a black-box solar-plant simulation benchmark; more
-%   details about the upstream benchmark can be found at
-%   <https://github.com/bbopt/solar>.
+%   PROBLEM_NAMES. More details about the upstream SOLAR benchmark can be found
+%   at <https://github.com/bbopt/solar>.
 %
 %   OPTIONS is a struct with the following fields:
 %
@@ -38,15 +37,21 @@ function problem_names = solar_select(options)
 %
 %   Two things to note:
 %
-%       1. SOLAR 8 and 9 are multiobjective and are not returned by this first
-%          scalar OptiProfiler integration. SOLAR 11 is disabled because the
-%          current upstream snapshot returns an empty output at the documented
-%          initial point.
+%       1. This selector currently returns scalar SOLAR problems only. SOLAR 8
+%          and 9 are multiobjective and are not returned. SOLAR 11 is disabled
+%          because the current upstream snapshot returns an empty output at the
+%          documented initial point.
 %       2. Several scalar SOLAR instances include integer or categorical
 %          variables. The wrapper rounds every `I` coordinate before calling the
 %          SOLAR executable. This is a wrapper-level mixed-integer handling
 %          rule, not a claim that those instances are native continuous
 %          problems.
+%
+%   Example:
+%
+%       names = solar_select(struct('ptype', 'n', 'maxdim', 20));
+%
+%   See also SOLAR_LOAD, SOLAR_COLLECT_INFO.
 
     if nargin < 1
         problem_names = solar_matlab_select();

@@ -6,6 +6,9 @@ function probinfo = solar_matlab_collect_info()
 %   should normally call `solar_collect_info`, whose name matches the
 %   OptiProfiler problem library name `solar`.
 %
+%   The returned table is loaded from `probinfo_matlab.mat`, which is generated
+%   by `scripts/collect_info.m` from the actual SOLAR_LOAD wrapper output.
+%
 %   See also SOLAR_COLLECT_INFO, SOLAR_SELECT, SOLAR_LOAD.
 
     load(fullfile(fileparts(mfilename('fullpath')), 'probinfo_matlab.mat'), 'probinfo');
