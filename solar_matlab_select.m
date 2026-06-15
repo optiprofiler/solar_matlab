@@ -1,5 +1,16 @@
 function problem_names = solar_matlab_select(options)
 %SOLAR_MATLAB_SELECT selects SOLAR problems satisfying OptiProfiler-style criteria.
+%
+%   PROBLEM_NAMES = SOLAR_MATLAB_SELECT(OPTIONS) is the MATLAB-specific
+%   implementation used by the public entry point `solar_select`. Users should
+%   normally call `solar_select`, whose name matches the OptiProfiler problem
+%   library name `solar`.
+%
+%   The selection table is read from `probinfo_matlab.csv`, which is generated
+%   from actual `solar_load` results. The vendored metadata is used only to
+%   filter currently enabled problems.
+%
+%   See also SOLAR_SELECT, SOLAR_LOAD, SOLAR_COLLECT_INFO.
 
     if nargin < 1 || isempty(options)
         options = struct();

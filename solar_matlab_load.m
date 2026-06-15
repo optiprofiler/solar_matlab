@@ -1,5 +1,12 @@
 function problem = solar_matlab_load(problem_name)
 %SOLAR_MATLAB_LOAD loads one SOLAR problem as an OptiProfiler Problem.
+%
+%   PROBLEM = SOLAR_MATLAB_LOAD(PROBLEM_NAME) is the MATLAB-specific
+%   implementation used by the public entry point `solar_load`. Users should
+%   normally call `solar_load`, whose name matches the OptiProfiler problem
+%   library name `solar`.
+%
+%   See also SOLAR_LOAD, SOLAR_SELECT, SOLAR_COLLECT_INFO.
 
     meta = find_solar_problem(problem_name);
     if ~meta.enabled
