@@ -47,6 +47,8 @@ jobs:
           release: R2024a
 
       - name: Generate slim runtime from adapter
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
           bash solar_adapter/scripts/sync_solar.sh
           bash solar_adapter/scripts/export_runtime.sh solar_adapter/build/solar-runtime
