@@ -11,17 +11,63 @@ license, and provenance files; do not commit upstream `.git`, upstream `tests/`,
 `runtime/solar/bin/solar`, `runtime/solar/bin/solar.exe`, or
 `runtime/solar/src/*.o`.
 
+## OptiProfiler Development Setup
+
+The setup and registry workflow below belongs to the unpublished OptiProfiler
+`matlab` development branch; it is not yet the workflow shown on the stable
+website. Ordinary OptiProfiler users should start from the core repository and
+let its locked setup install this adapter:
+
+```matlab
+setup(struct( ...
+    'install_matcutest', false, ...
+    'install_solar', true));
+```
+
+The adapter is stored below
+`prefdir/optiprofiler/problem_libraries/solar` by default. A caller may choose
+another writable parent with the core setup option `problem_library_root`.
+After setup, use the public name directly:
+
+```matlab
+options.plibs = {'solar'};
+scores = benchmark(solvers, options);
+
+library = resolveProblemLibrary('solar');
+```
+
+To update a setup-managed adapter, update the OptiProfiler core and rerun setup.
+A clean checkout is aligned to the commit in `matlab_problem_libraries.lock`;
+setup does not overwrite a dirty checkout. Do not run `git pull`
+unconditionally in the setup-managed directory.
+
+Detach the provider without deleting its files:
+
+```matlab
+unregisterProblemLibrary('solar');
+```
+
+This preserves the adapter checkout, vendored runtime source, compiled binary,
+build artifacts, caches, and user data. `install_solar=false` only skips SOLAR
+during that setup run; it does not unregister or delete anything. Likewise,
+`setup uninstall` removes OptiProfiler-managed MATLAB paths but preserves the
+registry and external files. There is deliberately no destructive setup
+option.
+
 ## Build Runtime
 
 ```matlab
 system('make -C runtime/solar/src')
 ```
 
+Manual `make` is intended for adapter development or troubleshooting. Ordinary
+OptiProfiler users do not need to run it before selecting SOLAR: the wrapper
+builds the binary on first use when it is missing.
+
 The binary is generated at `runtime/solar/bin/solar` and is ignored by git.
 On Windows, the binary is generated at `runtime/solar/bin/solar.exe`.
-The MATLAB wrapper also builds this binary on first use if it is missing. First
-build is protected by a local directory lock, so parallel workers do not try to
-compile and link the same runtime at the same time.
+First build is protected by a local directory lock, so parallel workers do not
+try to compile and link the same runtime at the same time.
 
 The build requires `make` and a C++ compiler compatible with upstream SOLAR.
 On Linux and macOS this is usually the system `make` plus `g++`/Clang. On
