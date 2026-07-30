@@ -10,9 +10,8 @@
   },
   "synced_at": "2026-06-12T00:00:00+00:00",
   "policy": {
-    "strategy": "track-upstream-latest-with-recorded-commit",
+    "strategy": "pinned-snapshot-with-manual-promotion",
     "vendor_source": false,
     "commit_upstream_checkout": false
   }
 }
-

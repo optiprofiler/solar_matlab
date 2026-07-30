@@ -85,10 +85,15 @@ The MAT-file header is normalized so repeated generation does not create
 timestamp-only diffs. The CI workflow checks both metadata files, runs a MATLAB
 smoke test, and verifies that local build artifacts stay ignored.
 
-The runtime-sync workflow listens for manual runs or `repository_dispatch`
-events from `solar_adapter`. It exports a slim SOLAR runtime from the adapter,
-copies it into this repository, regenerates MATLAB probinfo files, runs the
-smoke test, and commits only source, metadata, license, and provenance files.
+`Prepare SOLAR Runtime Candidate` is a manual review tool. It requires an exact
+adapter revision and exact upstream SOLAR commit, exports a slim runtime,
+regenerates the MATLAB metadata, runs the smoke test, and uploads a candidate
+archive. It never commits the candidate. `Collect Info` is also manual and only
+uploads regenerated metadata.
+
+The daily random smoke runs at 07:00 Beijing time. It records a reproducible
+seed and evaluates two metadata-reviewed fast problems at their initial points.
+Numerical-library thread counts are capped at two.
 
 ## Usage
 

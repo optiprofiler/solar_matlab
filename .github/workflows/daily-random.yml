@@ -1,0 +1,39 @@
+name: Daily random wrapper smoke
+
+on:
+  schedule:
+    # 07:00 Beijing time.
+    - cron: "0 23 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  random-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      OMP_NUM_THREADS: "2"
+      OPENBLAS_NUM_THREADS: "2"
+      MKL_NUM_THREADS: "2"
+      NUMEXPR_NUM_THREADS: "2"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Checkout OptiProfiler
+        uses: actions/checkout@v4
+        with:
+          repository: optiprofiler/optiprofiler
+          path: optiprofiler
+          ref: matlab
+
+      - name: Set up MATLAB
+        uses: matlab-actions/setup-matlab@v2
+        with:
+          release: R2024b
+
+      - name: Evaluate a reproducible fast subset
+        uses: matlab-actions/run-command@v2
+        with:
+          command: "run('tests/daily_random_solar_matlab.m')"
