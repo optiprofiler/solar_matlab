@@ -1,5 +1,7 @@
 # SOLAR MATLAB Adapter
 
+**OptiProfiler 2.0:** See [compatibility and release boundaries](V2_COMPATIBILITY.md).
+
 MATLAB OptiProfiler wrapper for the SOLAR black-box optimization benchmark.
 
 This repository carries a slim SOLAR runtime under `runtime/solar/`. It keeps
@@ -11,12 +13,11 @@ license, and provenance files; do not commit upstream `.git`, upstream `tests/`,
 `runtime/solar/bin/solar`, `runtime/solar/bin/solar.exe`, or
 `runtime/solar/src/*.o`.
 
-## OptiProfiler Development Setup
+## OptiProfiler Setup
 
-The setup and registry workflow below belongs to the unpublished OptiProfiler
-`matlab` development branch; it is not yet the workflow shown on the stable
-website. Ordinary OptiProfiler users should start from the core repository and
-let its locked setup install this adapter:
+The setup and registry workflow below belongs to OptiProfiler 2.0, which the
+website describes only once it is released. Ordinary OptiProfiler users should
+start from the core repository and let its locked setup install this adapter:
 
 ```matlab
 setup(struct( ...
@@ -57,8 +58,12 @@ option.
 ## Build Runtime
 
 ```matlab
+[~, ~] = mkdir(fullfile('runtime', 'solar', 'bin'));
 system('make -C runtime/solar/src')
 ```
+
+The makefile links into `runtime/solar/bin`, which a clean checkout does not
+contain, so create it first (`mkdir -p runtime/solar/bin` in a shell).
 
 Manual `make` is intended for adapter development or troubleshooting. Ordinary
 OptiProfiler users do not need to run it before selecting SOLAR: the wrapper
@@ -67,7 +72,9 @@ builds the binary on first use when it is missing.
 The binary is generated at `runtime/solar/bin/solar` and is ignored by git.
 On Windows, the binary is generated at `runtime/solar/bin/solar.exe`.
 First build is protected by a local directory lock, so parallel workers do not
-try to compile and link the same runtime at the same time.
+try to compile and link the same runtime at the same time. If a build is killed
+outright, the lock directory `runtime/solar/.build.lock.d` stays behind; later
+loads wait at most 600 s and then report it. Delete it once no build is running.
 
 The build requires `make` and a C++ compiler compatible with upstream SOLAR.
 On Linux and macOS this is usually the system `make` plus `g++`/Clang. On
@@ -129,12 +136,13 @@ v1.0.8 returns an empty output at the documented initial point.
 
 ## License and Provenance
 
-The runtime manifest records the exact upstream SOLAR commit. The upstream
-repository provides an LGPL-2.1 license file, while current SOLAR source headers
-refer to LGPL version 3 or later. This wrapper preserves both the license file
-and the source notices from the upstream snapshot; downstream distributions
-should keep the manifest, license text, source notices, and upstream URL
-together.
+[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) is the component inventory. The
+runtime manifest records the exact upstream SOLAR commit. The upstream repository
+provides an LGPL-2.1 license file, while every SOLAR C++ source file declares
+LGPL version 3 or later. This repository preserves both, and adds the official
+LGPL-3.0 and GPL-3.0 texts in `licenses/`, because LGPL version 3 supplements GPL
+version 3. Nothing is relicensed. Downstream distributions should keep the
+notices, license texts, source notices, manifest and upstream URL together.
 
 ## Runtime Expectations
 

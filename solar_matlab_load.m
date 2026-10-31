@@ -185,7 +185,10 @@ function cleanup_lock = acquire_build_lock(lock_dir)
             return;
         end
         if toc(started) > timeout_sec
-            error('SOLAR:BuildLockTimeout', 'Timed out waiting for SOLAR build lock: %s', strtrim(message));
+            error('SOLAR:BuildLockTimeout', ...
+                ['Timed out after %d s waiting for the SOLAR build lock %s (%s). If no ' ...
+                 'build is running, a killed build left it behind: delete that directory.'], ...
+                timeout_sec, lock_dir, strtrim(message));
         end
         pause(0.1);
     end
