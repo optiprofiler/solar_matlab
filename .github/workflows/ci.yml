@@ -25,7 +25,8 @@ jobs:
         with:
           repository: optiprofiler/optiprofiler
           path: optiprofiler
-          ref: main
+          # The exact 2.0.0 core this provider release was accepted with.
+          ref: ec130fb4e2fd7e59204bc4696d36b30eb2fa9da3
 
       - name: Set up MATLAB
         uses: matlab-actions/setup-matlab@v2
@@ -72,7 +73,11 @@ jobs:
       - name: Run MATLAB smoke test
         uses: matlab-actions/run-command@v2
         with:
-          command: "run('tests/smoke_solar_matlab.m')"
+          command: "run('tests/smoke_solar_matlab.m'); addpath('tests'); test_v2_contract"
+
+      - name: Check the license inventory
+        if: runner.os == 'Linux'
+        run: python3 tests/check_licenses.py
 
       - name: Ensure generated runtime artifacts are not tracked changes
         if: always()
