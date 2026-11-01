@@ -10,7 +10,7 @@ the native source, and no license is inferred for one component from another.
 | --- | --- | --- | --- |
 | SOLAR C++ sources | `runtime/solar/src/*.cpp`, `runtime/solar/src/*.hpp` | LGPL-3.0-or-later, as stated by the notice in every file | `licenses/LGPL-3.0.txt`, `licenses/GPL-3.0.txt` |
 | Other upstream files without a file-level notice | `runtime/solar/src/makefile`, `runtime/solar/README.upstream.md` | LGPL-2.1-only, recorded conservatively from the upstream repository's `LICENSE` file | `runtime/solar/LICENSE` |
-| OptiProfiler wrapper, metadata, scripts and tests | `*.m`, `probinfo_matlab.*`, `runtime/solar/manifest.json`, `runtime/solar/README.md`, `runtime/solar/metadata/`, `scripts/`, `tests/` | See below | None in this repository |
+| OptiProfiler wrapper, metadata, documentation, scripts, tests and workflows | Root `*.m` and `*.md`, `probinfo_matlab.*`, `runtime/solar/manifest.json`, `runtime/solar/README.md`, `runtime/solar/metadata/`, `scripts/`, `tests/`, `.github/`, `.gitattributes`, `.gitignore` | BSD-3-Clause | `LICENSE` |
 
 ## SOLAR runtime
 
@@ -39,7 +39,8 @@ upstream URL together in every redistribution.
 
 ## OptiProfiler wrapper
 
-The MATLAB wrapper files are independent OptiProfiler work and retain their
-existing OptiProfiler authorization and attribution. This repository declares no
-separate license for them yet. The LGPL and GPL texts above govern the SOLAR
+The MATLAB wrapper, generated metadata, documentation, maintenance scripts, tests
+and workflows listed above are independent OptiProfiler work, licensed under the
+BSD 3-Clause License in `LICENSE`. That license covers only these files and does
+not cover the SOLAR material above. The LGPL and GPL texts above govern the SOLAR
 material only and do not apply to the wrapper by virtue of being stored here.

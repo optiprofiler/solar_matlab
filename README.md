@@ -136,6 +136,11 @@ v1.0.8 returns an empty output at the documented initial point.
 
 ## License and Provenance
 
+The MATLAB adapter, generated metadata, maintenance scripts, tests and wrapper
+documentation are licensed under the [BSD 3-Clause License](LICENSE). That license
+covers only these OptiProfiler-authored files.
+
+The vendored SOLAR files under `runtime/solar/` keep their own licenses.
 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) is the component inventory. The
 runtime manifest records the exact upstream SOLAR commit. The upstream repository
 provides an LGPL-2.1 license file, while every SOLAR C++ source file declares

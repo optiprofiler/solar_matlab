@@ -1,4 +1,4 @@
-"""Check the SOLAR license inventory against the files in this repository."""
+"""Check the license inventory against the files in this repository."""
 
 from hashlib import sha256
 from pathlib import Path
@@ -7,6 +7,7 @@ import re
 
 ROOT = Path(__file__).resolve().parents[1]
 TEXTS = {
+    "LICENSE": "f74fec06aef600da2eb63c20f028f198d5e2882405665e2ae1f0f81400666a7c",
     "licenses/GPL-3.0.txt": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
     "licenses/LGPL-3.0.txt": "e3a994d82e644b03a792a930f574002658412f62407f5fee083f2555c5f23118",
     "runtime/solar/LICENSE": "20c17d8b8c48a600800dfd14f95d5cb9ff47066a9641ddeab48dc54aec96e331",
@@ -16,6 +17,7 @@ HEADER = re.compile(
     r"/\*\s*the Free Software Foundation, either version 3 of the License, or \(at your"
 )
 UNHEADED_UPSTREAM = {"runtime/solar/src/makefile", "runtime/solar/README.upstream.md"}
+WRAPPER_ROW = re.compile(r"^\| OptiProfiler wrapper\b.*\| BSD-3-Clause \| `LICENSE` \|$", re.MULTILINE)
 
 
 def main():
@@ -34,6 +36,11 @@ def main():
                    "dda8fd7f98d4392aa07b3e3056888624a00712a0"):
         if marker not in notice:
             raise AssertionError(f"THIRD_PARTY_NOTICES.md does not mention {marker}")
+    if not WRAPPER_ROW.search(notice):
+        raise AssertionError("THIRD_PARTY_NOTICES.md does not list the wrapper under LICENSE")
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    if "[BSD 3-Clause License](LICENSE)" not in readme:
+        raise AssertionError("README.md does not name the wrapper license")
     print(f"Checked {len(TEXTS)} license texts and {len(sources)} source notices.")
 
 
